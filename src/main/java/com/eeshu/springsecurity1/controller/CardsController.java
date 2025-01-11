@@ -1,12 +1,13 @@
 package com.eeshu.springsecurity1.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CardsController {
- @GetMapping("/mycards")
+    @GetMapping("/mycards")
+    @PreAuthorize("hasRole('read')")
     public String sayWelcome() {
         return "Here are the cards details from the db";
-        
     }
 }

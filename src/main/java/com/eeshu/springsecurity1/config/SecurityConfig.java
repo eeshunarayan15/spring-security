@@ -1,4 +1,5 @@
 package com.eeshu.springsecurity1.config;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
@@ -21,14 +22,17 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class SecurityConfig {
         @Bean
-
         SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+                http.csrf(csrf -> csrf.disable());
                 http.authorizeHttpRequests((requests) -> requests
-                                .requestMatchers("/mycards", "/myloans", "/contact")
-                                .authenticated()
-                                .requestMatchers("/balance").hasAnyAuthority("READ")
-                                .requestMatchers("/account").hasRole("ADMIN")
-                                .requestMatchers("/notices", "/contact", "/error").permitAll());
+                        .requestMatchers("/notices", "/contact", "/error", "/register").permitAll() // Public endpoints
+                        .requestMatchers("/balance").hasAuthority("READ") // Requires "READ" authority
+                        .requestMatchers("/account").hasRole("ADMIN")     // Requires "ROLE_ADMIN" role
+                        .requestMatchers("/mycards").hasAuthority("read") // Match exact "read" authority
+                        .requestMatchers("/myloans").hasAuthority("user") // Match exact "user" authority
+                        .anyRequest().authenticated()                    // All other requests require authentication
+                );
+
                 http.formLogin(withDefaults());
                 // http.formLogin(disable -> disable.disable());
                 http.httpBasic(withDefaults());
@@ -36,27 +40,30 @@ public class SecurityConfig {
         }
         // @Bean
         // public UserDetailsService userDetailsService() {
-        //         UserDetails admin = User.withUsername("admin").password("{bcrypt}$2a$12$rYeWpAOpZrfz1mkENrx81.lRSEybKMRvgdddXOc1acNJASr1/AimO").roles("ADMIN").build();
-        //         UserDetails user = User.withUsername("user")
-        //                         .password("{bcrypt}$2a$12$nY1A9GuYalp9eO1mWCjaUuH2D4vHb.twoei8mXYSAyZpCpfFMwvZW")
-        //                         .authorities("READ").build();
-        //         // UserDetails user3 = User.withUsername("user3").password("{noop}123").roles("READ").build();
+        // UserDetails admin =
+        // User.withUsername("admin").password("{bcrypt}$2a$12$rYeWpAOpZrfz1mkENrx81.lRSEybKMRvgdddXOc1acNJASr1/AimO").roles("ADMIN").build();
+        // UserDetails user = User.withUsername("user")
+        // .password("{bcrypt}$2a$12$nY1A9GuYalp9eO1mWCjaUuH2D4vHb.twoei8mXYSAyZpCpfFMwvZW")
+        // .authorities("READ").build();
+        // // UserDetails user3 =
+        // User.withUsername("user3").password("{noop}123").roles("READ").build();
 
-        //         return new InMemoryUserDetailsManager(user, admin);
+        // return new InMemoryUserDetailsManager(user, admin);
+        // }
+        // @Bean
+        // public UserDetailsService userDetailsService(DataSource dataSource) {
+        //
+        // return new JdbcUserDetailsManager(dataSource);
+        //
         // }
         @Bean
-        public UserDetailsService userDetailsService(DataSource dataSource) {
-    
-        return new JdbcUserDetailsManager(dataSource);
-        
-        }
         public PasswordEncoder passwordEncoder() {
                 return PasswordEncoderFactories.createDelegatingPasswordEncoder();
         }
 
         // @Bean
         // public CompromisedPasswordChecker compromisedPasswordChecker() {
-        //         return new HaveIBeenPwnedRestApiPasswordChecker();
+        // return new HaveIBeenPwnedRestApiPasswordChecker();
         // }
 
 }
